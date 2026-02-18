@@ -3,7 +3,7 @@ from player import Player
 import settings
 
 pygame.init()
-screen = pygame.display.set_mode((1000, 600))
+screen = pygame.display.set_mode((1000, 600), pygame.RESIZABLE, 32)
 clock = pygame.time.Clock()
 font = pygame.font.SysFont("consolas", 18)
 
@@ -20,6 +20,7 @@ timer = 10
 # placveholder terrain
 level_surface = pygame.transform.scale(pygame.image.load("bowl.png"), (1000,600))
 scene_1 = pygame.transform.scale(pygame.image.load("gfx/Background_00.png"), (1000,600))
+lvl_1_bg = pygame.transform.scale(pygame.image.load("gfx/Asset_08b.png"), (1000,600))
 
 
 level_mask = pygame.mask.from_surface(level_surface)
@@ -49,10 +50,11 @@ while running:
     elif state == GameState.GAME:
         player.update(dt, keys, level_mask)
         screen.fill((40, 40, 60))
+        screen.blit(lvl_1_bg)
         screen.blit(level_surface, (0, settings.surface_offest[1]))
         player.draw(screen)
     
-    print(timer)
+    #print(timer)
     if timer > 0:
         timer -= .01 * dt
 

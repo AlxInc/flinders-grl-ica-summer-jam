@@ -31,7 +31,10 @@ class Player:
         self.roll_rotation_deg = 0.0
         self.roll_rad_px = 250.0 # rot speed
         self.direction = True
-
+        self.jumping = False
+        self.jump_pow = 10.0
+        self.sprite_anchor = self.pos.copy()
+        self.timer = 0
 
         # Debug
         self.debug_rays = []
@@ -51,32 +54,35 @@ class Player:
         self.current_anim = self.animations[self.state]
         self.image = self.current_anim.image
         self.rect = self.image.get_rect(center=self.pos)
+        
 
     def ray_casting(self, level_mask):
         self.debug_rays = []
         hits = []
         start_y_base = self.pos.y
 
-        for offset in self.ray_offsets:
-            start_x = self.pos.x + offset
-            start_y = start_y_base
-            hit_point = None
+        if not self.jumping:
 
-            for dy in range(self.ray_length):
-                x = int(start_x)
-                y = int(start_y + dy)
-                lx = x + settings.surface_offest[0]
-                ly = y + settings.surface_offest[1]
-                if level_mask.overlap(level_mask, (lx - self.pos.x, ly - self.pos.y)):
-                    if lx > 0 and lx < level_mask.get_size()[0] and ly > 0 and ly < level_mask.get_size()[1]:
-                        if level_mask.get_at((lx, ly)):
-                            hit_point = pygame.Vector2(lx, ly)
-                            break
+            for offset in self.ray_offsets:
+                start_x = self.pos.x + offset
+                start_y = start_y_base
+                hit_point = None
 
-            self.debug_rays.append(((start_x, start_y), (start_x, start_y + self.ray_length), hit_point))
+                for dy in range(self.ray_length):
+                    x = int(start_x)
+                    y = int(start_y + dy)
+                    lx = x + settings.surface_offest[0]
+                    ly = y + settings.surface_offest[1]
+                    if level_mask.overlap(level_mask, (lx - self.pos.x, ly - self.pos.y)):
+                        if lx > 0 and lx < level_mask.get_size()[0] and ly > 0 and ly < level_mask.get_size()[1]:
+                            if level_mask.get_at((lx, ly)):
+                                hit_point = pygame.Vector2(lx, ly)
+                                break
 
-            if hit_point:
-                hits.append(hit_point)
+                self.debug_rays.append(((start_x, start_y), (start_x, start_y + self.ray_length), hit_point))
+
+                if hit_point:
+                    hits.append(hit_point)
 
         return hits
 
@@ -127,6 +133,17 @@ class Player:
         elif self.state == PlayerState.ROLL:
             self.vel.x *= (1 - self.roll_friction)
 
+        if self.on_ground and keys[pygame.K_SPACE]:
+            nx = math.sin(self.slope_angle)
+            ny = -math.cos(self.slope_angle)
+            print("jump")
+            jump_dir = pygame.Vector2(nx, ny).normalize()
+            self.vel += jump_dir * self.jump_pow
+            self.sprite_anchor = self.pos.copy()
+            self.on_ground = False
+            self.jumping = True
+            self.timer = 200
+            
         # need to add jump
         # way to control roll might be good too
 
@@ -152,7 +169,7 @@ class Player:
 
         hits = self.ray_casting(level_mask)
 
-        if hits:
+        if hits and not self.jumping:
             self.on_ground = True
             self.slope_angle = self.calculate_slope_angle(hits)
             self.apply_ground_physics()
@@ -162,6 +179,12 @@ class Player:
             self.on_ground = False
             self.slope_angle = 0.0
             self.apply_air_physics()
+
+        if self.timer <= 0:
+            self.jumping = False
+
+        if self.timer > 0:
+            self.timer -= 1 * dt
 
         if self.state == PlayerState.ROLL:
             if self.on_ground:
@@ -203,12 +226,29 @@ class Player:
         self.image = pygame.transform.rotate(img, total_deg)
         
         self.rect = self.image.get_rect(center=self.pos)
+        if not self.on_ground:
+            self.sprite_anchor = self.pos.copy()
 
 
     def draw(self, surf):
-        blit_pos = ((self.pos.x - self.image.get_width() // 2, self.pos.y - self.image.get_height() // 2 ))
+        #blit_pos = ((self.pos.x - self.image.get_width() // 2, self.pos.y - self.image.get_height() // 2 ))
+        if self.on_ground:
+            hits = [h for (_, _, h) in self.debug_rays if h]
+            hits_sorted = sorted(hits, key=lambda p: p.x)
+            
+            ax = ((hits_sorted[0].x + hits_sorted[-1].x) // 2) - self.image.get_width() // 2
+            ay = ((hits_sorted[0].y + hits_sorted[-1].y) // 2) - self.image.get_height() // 2
+            nx = -math.sin(self.slope_angle)
+            ny =  math.cos(self.slope_angle)
+            GROUND_OFFSET = -15  # pixels
 
-        
+            blit_pos = (ax + nx * GROUND_OFFSET, ay + ny * GROUND_OFFSET)
+        else:
+            blit_pos = (
+                self.sprite_anchor.x - self.image.get_width() // 2,
+                self.sprite_anchor.y - self.image.get_height() // 2
+            )
+
         if self.direction:
             surf.blit(self.image, blit_pos)
         else:
@@ -216,7 +256,9 @@ class Player:
         
         
         # DEBUG -----------------------------------------------------------------------------------------
-        #'''
+        '''
+
+        print(self.timer)
         pygame.draw.rect(surf, (255,0,0), self.rect, 2)
 
         pygame.draw.circle(surf, (0,0,0), self.pos, 3)

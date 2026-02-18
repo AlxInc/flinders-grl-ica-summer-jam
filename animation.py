@@ -9,7 +9,7 @@ class Animation:
 
     def update(self, dt):
         self.index += self.speed * (dt / 16)  # dt from main is ~16 at 60fps
-        print(self.index)
+        #print(self.index)
         if self.index >= len(self.frames):
             self.index = 0
         self.image = self.frames[int(self.index)]
