@@ -3,7 +3,7 @@ from player import Player
 import settings
 
 pygame.init()
-screen = pygame.display.set_mode((1000, 600), pygame.RESIZABLE, 32)
+screen = pygame.display.set_mode((1920, 1080), pygame.RESIZABLE, 32)
 clock = pygame.time.Clock()
 font = pygame.font.SysFont("consolas", 18)
 
@@ -18,12 +18,13 @@ state = GameState.INTRO
 timer = 10
 
 # placveholder terrain
-level_surface = pygame.transform.scale(pygame.image.load("bowl.png"), (1000,600))
-scene_1 = pygame.transform.scale(pygame.image.load("gfx/Background_00.png"), (1000,600))
-lvl_1_bg = pygame.transform.scale(pygame.image.load("gfx/Asset_08b.png"), (1000,600))
+level_surface = pygame.transform.scale(pygame.image.load("Mask_01.png"), (1920, 1080))
+level_surface_img = pygame.transform.scale(pygame.image.load("Mask_01.png"), (1920, 1080))
+scene_1 = pygame.transform.scale(pygame.image.load("gfx/Background_00.png"), (1920, 1080))
+#lvl_1_bg = pygame.transform.scale(pygame.image.load("gfx/Asset_08b.png"), (1000,600))
 
 
-level_mask = pygame.mask.from_surface(level_surface)
+level_mask = pygame.mask.from_surface(level_surface_img)
 
 player = Player(100, 200)
 camera = pygame.Vector2(0, 0)
@@ -50,7 +51,7 @@ while running:
     elif state == GameState.GAME:
         player.update(dt, keys, level_mask)
         screen.fill((40, 40, 60))
-        screen.blit(lvl_1_bg)
+        #screen.blit(lvl_1_bg)
         screen.blit(level_surface, (0, settings.surface_offest[1]))
         player.draw(screen)
     
