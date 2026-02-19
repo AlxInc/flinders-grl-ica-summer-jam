@@ -1,4 +1,5 @@
 import pygame
+import asyncio
 from player import Player
 import settings
 
@@ -7,79 +8,94 @@ screen = pygame.display.set_mode((1920, 1080), pygame.RESIZABLE, 32)
 clock = pygame.time.Clock()
 font = pygame.font.SysFont("consolas", 18)
 
-class GameState:
-    INTRO = 0
-    GAME = 1
-    level = 1
-    scene = 1
-    
-
-state = GameState.INTRO
-timer = 10
-
-# placveholder terrain
-level_surface = pygame.transform.scale(pygame.image.load("Finalized_lvl1.png"), (1920, 1080))
-level_surface_img = pygame.transform.scale(pygame.image.load("Mask_01.png"), (1920, 1080))
-level_surface2 = pygame.transform.scale(pygame.image.load("Mask_02b.png"), (1920, 1080))
-level_surface_img2 = pygame.transform.scale(pygame.image.load("Mask_02.png"), (1920, 1080))
-level_surface3 = pygame.transform.scale(pygame.image.load("Finalized_lvl3.png"), (1920, 1080))
-level_surface_img3 = pygame.transform.scale(pygame.image.load("Mask_03.png"), (1920, 1080))
-scene_1 = pygame.transform.scale(pygame.image.load("gfx/Background_00.png"), (1920, 1080))
-#lvl_1_bg = pygame.transform.scale(pygame.image.load("gfx/Asset_08b.png"), (1000,600))
 
 
 
-level_mask = pygame.mask.from_surface(level_surface_img)
+async def main():
+    class GameState:
+        INTRO = 0
+        GAME = 1
+        level = 1
+        scene = 1
+        
+
+    state = GameState.INTRO
+    timer = 7
+
+    # placveholder terrain
+    level_surface = pygame.transform.scale(pygame.image.load("Finalized_lvl1.png"), (1920, 1080))
+    level_surface_img = pygame.transform.scale(pygame.image.load("Mask_01.png"), (1920, 1080))
+    level_surface2 = pygame.transform.scale(pygame.image.load("Mask_02b.png"), (1920, 1080))
+    level_surface_img2 = pygame.transform.scale(pygame.image.load("Mask_02.png"), (1920, 1080))
+    level_surface3 = pygame.transform.scale(pygame.image.load("Finalized_lvl3.png"), (1920, 1080))
+    level_surface_img3 = pygame.transform.scale(pygame.image.load("Mask_03.png"), (1920, 1080))
+
+    scene_1 = pygame.transform.scale(pygame.image.load("Background_00.png"), (1920, 1080))
+    scene_2 = pygame.transform.scale(pygame.image.load("Background_01.png"), (1920, 1080))
+    #lvl_1_bg = pygame.transform.scale(pygame.image.load("gfx/Asset_08b.png"), (1000,600))
 
 
-player = Player(100, 200)
-camera = pygame.Vector2(0, 0)
+
+    level_mask = pygame.mask.from_surface(level_surface_img)
 
 
-running = True
-while running:
-    dt = clock.tick(60) 
-    #dt = clock.get_time() / 1000
+    player = Player(100, 200)
+    camera = pygame.Vector2(0, 0)
 
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
+    running = True
+    while running:
+        dt = clock.tick(60) 
+        #dt = clock.get_time() / 1000
 
-    if settings.level == 1:
-        level_mask = pygame.mask.from_surface(level_surface_img)
-    elif settings.level == 2:
-        level_mask = pygame.mask.from_surface(level_surface_img2)
-    elif settings.level == 3:
-        level_mask = pygame.mask.from_surface(level_surface_img3)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
 
-    keys = pygame.key.get_pressed()
-    if state == GameState.INTRO:
-        if GameState.scene == 1:
-            screen.blit(scene_1)
-            if timer <= 0:
-                GameState.scene += 1
-        if GameState.scene == 2:
-            state = GameState.GAME
-
-    elif state == GameState.GAME:
-        player.update(dt, keys, level_mask)
-        screen.fill((40, 40, 60))
-        #screen.blit(lvl_1_bg)
         if settings.level == 1:
-            screen.blit(level_surface, (0, settings.surface_offest[1]))
+            level_mask = pygame.mask.from_surface(level_surface_img)
         elif settings.level == 2:
-            screen.blit(level_surface2, (0, settings.surface_offest[1]))
+            level_mask = pygame.mask.from_surface(level_surface_img2)
         elif settings.level == 3:
-            screen.blit(level_surface3, (0, settings.surface_offest[1]))
+            level_mask = pygame.mask.from_surface(level_surface_img3)
 
-        player.draw(screen)
-    
-    #print(timer)
-    if timer > 0:
-        timer -= .01 * dt
+        keys = pygame.key.get_pressed()
+        if state == GameState.INTRO:
+            if GameState.scene == 1:
+                screen.blit(scene_1)
+                if timer <= 0:
+                    timer = 7
+                    GameState.scene += 1
+            elif GameState.scene == 2:
+                screen.blit(scene_2)
+                if timer <= 0:
+                    GameState.scene += 1
+            elif GameState.scene == 3:
+                state = GameState.GAME
 
-    
+        elif state == GameState.GAME:
+            player.update(dt, keys, level_mask)
+            screen.fill((40, 40, 60))
 
-    pygame.display.flip()
+            #screen.blit(lvl_1_bg)
 
-pygame.quit()
+            if settings.level == 1:
+                screen.blit(level_surface, (0, settings.surface_offest[1]))
+            elif settings.level == 2:
+                screen.blit(level_surface2, (0, settings.surface_offest[1]))
+            elif settings.level == 3:
+                screen.blit(level_surface3, (0, settings.surface_offest[1]))
+
+            player.draw(screen)
+        
+        #print(timer)
+        if timer > 0:
+            timer -= .01 * dt
+
+        
+
+        pygame.display.update()
+        clock.tick(60)
+
+        await asyncio.sleep(0)
+
+asyncio.run(main())
