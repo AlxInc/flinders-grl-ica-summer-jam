@@ -18,8 +18,12 @@ state = GameState.INTRO
 timer = 10
 
 # placveholder terrain
-level_surface = pygame.transform.scale(pygame.image.load("Mask_01.png"), (1920, 1080))
+level_surface = pygame.transform.scale(pygame.image.load("Finalized_lvl1.png"), (1920, 1080))
 level_surface_img = pygame.transform.scale(pygame.image.load("Mask_01.png"), (1920, 1080))
+level_surface2 = pygame.transform.scale(pygame.image.load("Mask_02b.png"), (1920, 1080))
+level_surface_img2 = pygame.transform.scale(pygame.image.load("Mask_02.png"), (1920, 1080))
+level_surface3 = pygame.transform.scale(pygame.image.load("Finalized_lvl3.png"), (1920, 1080))
+level_surface_img3 = pygame.transform.scale(pygame.image.load("Mask_03.png"), (1920, 1080))
 scene_1 = pygame.transform.scale(pygame.image.load("gfx/Background_00.png"), (1920, 1080))
 #lvl_1_bg = pygame.transform.scale(pygame.image.load("gfx/Asset_08b.png"), (1000,600))
 
@@ -39,6 +43,13 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
+    if settings.level == 1:
+        level_mask = pygame.mask.from_surface(level_surface_img)
+    elif settings.level == 2:
+        level_mask = pygame.mask.from_surface(level_surface_img2)
+    elif settings.level == 3:
+        level_mask = pygame.mask.from_surface(level_surface_img3)
+
     keys = pygame.key.get_pressed()
     if state == GameState.INTRO:
         if GameState.scene == 1:
@@ -52,7 +63,13 @@ while running:
         player.update(dt, keys, level_mask)
         screen.fill((40, 40, 60))
         #screen.blit(lvl_1_bg)
-        screen.blit(level_surface, (0, settings.surface_offest[1]))
+        if settings.level == 1:
+            screen.blit(level_surface, (0, settings.surface_offest[1]))
+        elif settings.level == 2:
+            screen.blit(level_surface2, (0, settings.surface_offest[1]))
+        elif settings.level == 3:
+            screen.blit(level_surface3, (0, settings.surface_offest[1]))
+
         player.draw(screen)
     
     #print(timer)
