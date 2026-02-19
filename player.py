@@ -178,6 +178,7 @@ class Player:
             jump_dir = pygame.Vector2(nx, ny)
             if jump_dir.length_squared() > 0:
                 jump_dir = jump_dir.normalize()
+                pygame.mixer.Sound.play(settings.sfx_dict['s_land'])
             else:
                 jump_dir = pygame.Vector2(0, -1)
 
@@ -301,6 +302,7 @@ class Player:
 
         else:
             self.on_ground = False
+            pygame.mixer.Sound.play(settings.sfx_dict['h_land'])
             self.slope_angle = 0.0
             self.apply_air_physics(dt)
 

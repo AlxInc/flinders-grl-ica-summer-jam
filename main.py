@@ -28,7 +28,9 @@ scene_1 = pygame.transform.scale(pygame.image.load("gfx/Background_00.png"), (19
 #lvl_1_bg = pygame.transform.scale(pygame.image.load("gfx/Asset_08b.png"), (1000,600))
 
 
+
 level_mask = pygame.mask.from_surface(level_surface_img)
+
 
 player = Player(100, 200)
 camera = pygame.Vector2(0, 0)
