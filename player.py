@@ -1,4 +1,5 @@
 import math
+import numpy as np
 from math import atan2, sin, cos, pi, degrees
 import pygame
 from animation import Animation
@@ -16,6 +17,7 @@ class Player:
     def __init__(self, x, y):
         self.pos = pygame.Vector2(x, y)
         self.vel = pygame.Vector2(0, 0)
+        self.max_speed = 10
         self.render_pos = self.pos.copy()
         self.render_snap_dist = 90.0         
         self.render_follow_speed = 18.0      
@@ -180,7 +182,9 @@ class Player:
                 jump_dir = pygame.Vector2(0, -1)
 
             self.vel += jump_dir * self.jump_pow
-
+            speed = np.linalg.norm(self.vel) # get speed (the magnitude of the vel)
+            if speed > self.max_speed:
+                self.vel = (self.vel / speed) * self.max_speed
         
             self.on_ground = False
             self.jumping = True
@@ -378,6 +382,16 @@ class Player:
             surf.blit(self.image, blit_pos)
         else:
             surf.blit(pygame.transform.flip(self.image, True, False), blit_pos)
+
+        print(blit_pos)
+        if blit_pos[0] > 1800 and settings.level == 1:
+            settings.level = 2
+            self.pos = pygame.Vector2(10, 205)
+        elif blit_pos[0] > 1800 and settings.level == 2:
+            settings.level = 3
+            self.pos = pygame.Vector2(10, 400)
+
+        self.pos.x = pygame.math.clamp(self.pos.x, 1, 1950)
           
         # DEBUG -----------------------------------------------------------------------------------------
         '''
